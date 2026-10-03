@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiKAP - Sistem Kas & Agenda PAPIKO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <header class="bg-emerald-800 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-red-600 border-2 border-amber-400 flex items-center justify-center font-bold text-white shadow-inner text-lg">
+                    ♔K
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg leading-tight flex items-center gap-2">
+                        SiKAP <span class="text-xs bg-emerald-700 px-2 py-0.5 rounded text-amber-300 font-normal">PAPIKO Kokosan</span>
+                    </h1>
+                    <p class="text-[11px] text-emerald-200">Sistem Kas & Kesekretariatan Transparan</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div id="auth-status-badge" class="text-xs bg-emerald-900 text-emerald-100 px-3 py-1.5 rounded-full font-medium hidden sm:block">
+                    👁️ Mode Anggota
+                </div>
+                <button id="btn-auth-action" onclick="handleAuthClick()" class="bg-white text-emerald-900 hover:bg-emerald-50 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm transition-all">
+                    🔐 Login Pengurus
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-[61px] z-40">
+        <div class="max-w-6xl mx-auto px-4 flex overflow-x-auto space-x-2 sm:space-x-4 py-2 no-scrollbar">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-emerald-50 text-emerald-800 whitespace-nowrap">📊 Dashboard</button>
+            <button onclick="switchTab('kas')" id="btn-kas" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-100 whitespace-nowrap">💰 Data Kas</button>
+            <button onclick="switchTab('notulen')" id="btn-notulen" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-100 whitespace-nowrap">📝 Notulen Rapat</button>
+            <button onclick="switchTab('agenda')" id="btn-agenda" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-100 whitespace-nowrap">📅 Agenda & Jadwal</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+        
+        <!-- DASHBOARD TAB -->
+        <section id="tab-dashboard" class="space-y-6">
+            <div class="bg-gradient-to-r from-emerald-800 via-teal-800 to-gray-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-bold">K</div>
+                <h2 class="text-xs uppercase tracking-wider text-emerald-200 font-semibold">Total Saldo Kas PAPIKO Kokosan</h2>
+                <p id="dash-total-saldo" class="text-3xl sm:text-4xl font-extrabold mt-1">Rp 0</p>
+                <div class="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-emerald-700/60">
+                    <div>
+                        <span class="text-xs text-emerald-200">Total Pemasukan</span>
+                        <p id="dash-total-in" class="text-lg font-bold text-emerald-300">Rp 0</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-emerald-200">Total Pengeluaran</span>
+                        <p id="dash-total-out" class="text-lg font-bold text-red-300">Rp 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats & Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Arsip Notulen Rapat</p>
+                        <h3 id="dash-total-notulen" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center text-2xl font-bold">📝</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Agenda Mendatang</p>
+                        <h3 id="dash-total-agenda" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-teal-50 text-teal-700 rounded-full flex items-center justify-center text-2xl font-bold">📅</div>
+                </div>
+            </div>
+
+            <!-- Reminder Banner -->
+            <div id="dash-reminder-box" class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
+                <h4 class="font-bold text-amber-800 text-sm flex items-center">
+                    <span class="mr-2">⏰</span> Pengingat Agenda Terdekat
+                </h4>
+                <p id="dash-reminder-text" class="text-xs text-amber-700 mt-1">Belum ada agenda terdekat dalam waktu dekat.</p>
+            </div>
+        </section>
+
+        <!-- KAS TAB -->
+        <section id="tab-kas" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div>
+                    <h2 class="font-bold text-lg text-gray-800">Manajemen Kas Keuangan</h2>
+                    <p class="text-xs text-gray-500">Transparansi pemasukan iuran dan pengeluaran warga pemuda.</p>
+                </div>
+                <!-- Pengurus Only Button -->
+                <button id="btn-add-kas" onclick="openModal('modal-kas')" class="pengurus-only hidden bg-emerald-800 hover:bg-emerald-900 text-white text-sm px-4 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center space-x-1 shrink-0">
+                    <span>➕</span> <span>Tambah Transaksi</span>
+                </button>
+            </div>
+
+            <!-- Filter & Search Bar Kas -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-3 items-center justify-between">
+                <div class="w-full sm:w-72">
+                    <input type="text" id="search-kas" oninput="renderAll()" placeholder="🔍 Cari keterangan / kategori..." class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-700">
+                </div>
+                <div class="w-full sm:w-auto flex items-center space-x-2">
+                    <span class="text-xs text-gray-500 font-medium">Filter Tipe:</span>
+                    <select id="filter-kas-tipe" onchange="renderAll()" class="text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-700">
+                        <option value="all">Semua Transaksi</option>
+                        <option value="in">Pemasukan Saja</option>
+                        <option value="out">Pengeluaran Saja</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Kas Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-xs font-semibold text-gray-600 uppercase border-b border-gray-200">
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3">Kategori</th>
+                                <th class="p-3 text-right">Masuk (Rp)</th>
+                                <th class="p-3 text-right">Keluar (Rp)</th>
+                                <th id="th-aksi-kas" class="p-3 text-center pengurus-only hidden">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-kas-body" class="divide-y divide-gray-100 text-sm">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOTULEN TAB -->
+        <section id="tab-notulen" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div>
+                    <h2 class="font-bold text-lg text-gray-800">Arsip Notulen Rapat</h2>
+                    <p class="text-xs text-gray-500">Hasil keputusan dan catatan penting rapat PAPIKO.</p>
+                </div>
+                <!-- Pengurus Only Button -->
+                <button id="btn-add-notulen" onclick="openModal('modal-notulen')" class="pengurus-only hidden bg-emerald-800 hover:bg-emerald-900 text-white text-sm px-4 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center space-x-1 shrink-0">
+                    <span>➕</span> <span>Buat Notulen Baru</span>
+                </button>
+            </div>
+
+            <!-- Search Notulen -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <input type="text" id="search-notulen" oninput="renderAll()" placeholder="🔍 Cari judul rapat atau pimpinan..." class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-700">
+            </div>
+
+            <div id="list-notulen" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- AGENDA TAB -->
+        <section id="tab-agenda" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div>
+                    <h2 class="font-bold text-lg text-gray-800">Agenda & Jadwal Kegiatan</h2>
+                    <p class="text-xs text-gray-500">Jadwal kegiatan pemuda-pemudi dengan pengingat otomatis.</p>
+                </div>
+                <!-- Pengurus Only Button -->
+                <button id="btn-add-agenda" onclick="openModal('modal-agenda')" class="pengurus-only hidden bg-emerald-800 hover:bg-emerald-900 text-white text-sm px-4 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center space-x-1 shrink-0">
+                    <span>➕</span> <span>Tambah Agenda</span>
+                </button>
+            </div>
+
+            <!-- Search Agenda -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <input type="text" id="search-agenda" oninput="renderAll()" placeholder="🔍 Cari nama kegiatan atau lokasi..." class="w-full text-sm border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-700">
+            </div>
+
+            <div id="list-agenda" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL LOGIN PENGURUS -->
+    <div id="modal-login" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-base text-gray-800">🔐 Login Pengurus SiKAP</h3>
+                <button onclick="closeModal('modal-login')" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500">Masukkan PIN pengurus PAPIKO untuk mengakses menu tambah/hapus data.</p>
+            <form onsubmit="processLogin(event)" class="space-y-4 text-sm">
+                <div>
+                    <input type="password" id="input-pin" placeholder="PIN (Default: 1234)" required class="w-full border rounded-lg px-3 py-2 text-center tracking-widest text-lg font-bold focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-login')" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-xs">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-medium text-xs">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH KAS -->
+    <div id="modal-kas" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-gray-800">Tambah Transaksi Kas</h3>
+                <button onclick="closeModal('modal-kas')" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            <form id="form-kas" onsubmit="addKas(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" id="kas-tanggal" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Jenis Transaksi</label>
+                    <select id="kas-tipe" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                        <option value="in">Pemasukan (Kas Masuk)</option>
+                        <option value="out">Pengeluaran (Kas Keluar)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Keterangan</label>
+                    <input type="text" id="kas-ket" placeholder="Contoh: Iuran Bulanan Warga Kokosan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Kategori</label>
+                    <input type="text" id="kas-kat" placeholder="Contoh: Iuran / Konsumsi / Perlengkapan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Nominal (Rp)</label>
+                    <input type="number" id="kas-nominal" placeholder="Contoh: 50000" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-kas')" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-medium">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH NOTULEN -->
+    <div id="modal-notulen" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-gray-800">Buat Notulen Rapat Baru</h3>
+                <button onclick="closeModal('modal-notulen')" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            <form id="form-notulen" onsubmit="addNotulen(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Judul Rapat</label>
+                    <input type="text" id="notulen-judul" placeholder="Contoh: Rapat Rutin Bulanan Pemuda" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Tanggal Rapat</label>
+                    <input type="date" id="notulen-tanggal" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Pimpinan / Pemimpin Rapat</label>
+                    <input type="text" id="notulen-pimpinan" placeholder="Contoh: Ketua PAPIKO" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Hasil & Catatan Penting Rapat</label>
+                    <textarea id="notulen-isi" rows="5" placeholder="Tuliskan hasil keputusan rapat di sini..." required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-notulen')" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-medium">Simpan Notulen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH AGENDA -->
+    <div id="modal-agenda" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-lg text-gray-800">Tambah Agenda Kegiatan</h3>
+                <button onclick="closeModal('modal-agenda')" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            <form id="form-agenda" onsubmit="addAgenda(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Nama Kegiatan</label>
+                    <input type="text" id="agenda-nama" placeholder="Contoh: Kerja Bakti Lingkungan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Tanggal Pelaksanaan</label>
+                    <input type="date" id="agenda-tanggal" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Lokasi / Tempat</label>
+                    <input type="text" id="agenda-lokasi" placeholder="Contoh: Pos ronda RT Kokosan" required class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div>
+                    <label class="block font-medium text-gray-700 mb-1">Keterangan Tambahan</label>
+                    <input type="text" id="agenda-ket" placeholder="Contoh: Membawa peralatan masing-masing" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-700 outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modal-agenda')" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg font-medium">Simpan Agenda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Auth State (Default: Anggota / Read-Only)
+        let isPengurus = localStorage.getItem('sikap_pengurus') === 'true';
+
+        // Default Sample Data if Empty
+        let kasData = JSON.parse(localStorage.getItem('sikap_kas')) || [
+            { id: 1, tanggal: '2026-10-01', ket: 'Iuran Bulanan Warga Kokosan', kat: 'Iuran', tipe: 'in', nominal: 150000 },
+            { id: 2, tanggal: '2026-10-02', ket: 'Beli Konsumsi Rapat Pemuda', kat: 'Konsumsi', tipe: 'out', nominal: 45000 }
+        ];
+
+        let notulenData = JSON.parse(localStorage.getItem('sikap_notulen')) || [
+            { id: 1, judul: 'Rapat Koordinasi PAPIKO', tanggal: '2026-10-01', pimpinan: 'Ketua PAPIKO', isi: 'Membahas iuran kas bulan Oktober dan rencana kerja bakti lingkungan.' }
+        ];
+
+        let agendaData = JSON.parse(localStorage.getItem('sikap_agenda')) || [
+            { id: 1, nama: 'Kerja Bakti Kampung Kokosan', tanggal: '2026-10-08', lokasi: 'Sepanjang Jalan Utama Kokosan', ket: 'Membawa alat kebersihan masing-masing.' },
+            { id: 2, nama: 'Rapat Evaluasi Bulanan', tanggal: '2026-10-25', lokasi: 'Balai Warga Kokosan', ket: 'Wajib hadir seluruh pemuda-pemudi.' }
+        ];
+
+        // Save to LocalStorage
+        function saveData() {
+            localStorage.setItem('sikap_kas', JSON.stringify(kasData));
+            localStorage.setItem('sikap_notulen', JSON.stringify(notulenData));
+            localStorage.setItem('sikap_agenda', JSON.stringify(agendaData));
+            renderAll();
+        }
+
+        // Auth Logic
+        function handleAuthClick() {
+            if (isPengurus) {
+                if (confirm('Keluar dari Mode Pengurus?')) {
+                    isPengurus = false;
+                    localStorage.setItem('sikap_pengurus', 'false');
+                    renderAll();
+                }
+            } else {
+                openModal('modal-login');
+            }
+        }
+
+        function processLogin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('input-pin').value;
+            // Default PIN Pengurus: 1234
+            if (pin === '1234') {
+                isPengurus = true;
+                localStorage.setItem('sikap_pengurus', 'true');
+                closeModal('modal-login');
+                document.getElementById('input-pin').value = '';
+                renderAll();
+                alert('Berhasil masuk sebagai Pengurus PAPIKO!');
+            } else {
+                alert('PIN Salah! Gunakan PIN default: 1234');
+            }
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('section[id^="tab-"]').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-50', 'text-emerald-800');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+            activeBtn.classList.add('bg-emerald-50', 'text-emerald-800');
+        }
+
+        // Modal Controls
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Format Currency Rupiah
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        // Add Kas
+        function addKas(e) {
+            e.preventDefault();
+            if (!isPengurus) return alert('Akses ditolak!');
+            const newItem = {
+                id: Date.now(),
+                tanggal: document.getElementById('kas-tanggal').value,
+                tipe: document.getElementById('kas-tipe').value,
+                ket: document.getElementById('kas-ket').value,
+                kat: document.getElementById('kas-kat').value,
+                nominal: parseInt(document.getElementById('kas-nominal').value)
+            };
+            kasData.push(newItem);
+            saveData();
+            closeModal('modal-kas');
+            document.getElementById('form-kas').reset();
+        }
+
+        // Delete Kas
+        function deleteKas(id) {
+            if (!isPengurus) return alert('Akses ditolak!');
+            if (confirm('Yakin ingin menghapus transaksi ini?')) {
+                kasData = kasData.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        // Add Notulen
+        function addNotulen(e) {
+            e.preventDefault();
+            if (!isPengurus) return alert('Akses ditolak!');
+            const newItem = {
+                id: Date.now(),
+                judul: document.getElementById('notulen-judul').value,
+                tanggal: document.getElementById('notulen-tanggal').value,
+                pimpinan: document.getElementById('notulen-pimpinan').value,
+                isi: document.getElementById('notulen-isi').value
+            };
+            notulenData.push(newItem);
+            saveData();
+            closeModal('modal-notulen');
+            document.getElementById('form-notulen').reset();
+        }
+
+        // Delete Notulen
+        function deleteNotulen(id) {
+            if (!isPengurus) return alert('Akses ditolak!');
+            if (confirm('Yakin ingin menghapus notulen ini?')) {
+                notulenData = notulenData.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        // Add Agenda
+        function addAgenda(e) {
+            e.preventDefault();
+            if (!isPengurus) return alert('Akses ditolak!');
+            const newItem = {
+                id: Date.now(),
+                nama: document.getElementById('agenda-nama').value,
+                tanggal: document.getElementById('agenda-tanggal').value,
+                lokasi: document.getElementById('agenda-lokasi').value,
+                ket: document.getElementById('agenda-ket').value
+            };
+            agendaData.push(newItem);
+            saveData();
+            closeModal('modal-agenda');
+            document.getElementById('form-agenda').reset();
+        }
+
+        // Delete Agenda
+        function deleteAgenda(id) {
+            if (!isPengurus) return alert('Akses ditolak!');
+            if (confirm('Yakin ingin menghapus agenda ini?')) {
+                agendaData = agendaData.filter(item => item.id !== id);
+                saveData();
+            }
+        }
+
+        // Render All Data with Role-Based UI
+        function renderAll() {
+            // Update Auth Badge & Button UI
+            const badge = document.getElementById('auth-status-badge');
+            const authBtn = document.getElementById('btn-auth-action');
+            const pengurusElements = document.querySelectorAll('.pengurus-only');
+
+            if (isPengurus) {
+                badge.className = 'text-xs bg-amber-600 text-white px-3 py-1.5 rounded-full font-medium hidden sm:block';
+                badge.innerText = '⭐ Mode Pengurus (Aktif)';
+                authBtn.innerText = '🔓 Keluar Pengurus';
+                authBtn.className = 'bg-amber-100 text-amber-900 hover:bg-amber-200 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm transition-all';
+                pengurusElements.forEach(el => el.classList.remove('hidden'));
+            } else {
+                badge.className = 'text-xs bg-emerald-900 text-emerald-100 px-3 py-1.5 rounded-full font-medium hidden sm:block';
+                badge.innerText = '👁️ Mode Anggota';
+                authBtn.innerText = '🔐 Login Pengurus';
+                authBtn.className = 'bg-white text-emerald-900 hover:bg-emerald-50 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm transition-all';
+                pengurusElements.forEach(el => el.classList.add('hidden'));
+            }
+
+            // 1. Calculations & Totals
+            let totalIn = 0;
+            let totalOut = 0;
+            kasData.forEach(item => {
+                if (item.tipe === 'in') totalIn += item.nominal;
+                else totalOut += item.nominal;
+            });
+            const totalSaldo = totalIn - totalOut;
+
+            document.getElementById('dash-total-saldo').innerText = formatRupiah(totalSaldo);
+            document.getElementById('dash-total-in').innerText = formatRupiah(totalIn);
+            document.getElementById('dash-total-out').innerText = formatRupiah(totalOut);
+            document.getElementById('dash-total-notulen').innerText = notulenData.length;
+            document.getElementById('dash-total-agenda').innerText = agendaData.length;
+
+            // 2. KAS FILTER & RENDER
+            const searchKasVal = document.getElementById('search-kas').value.toLowerCase();
+            const filterKasTipe = document.getElementById('filter-kas-tipe').value;
+            
+            let filteredKas = kasData.filter(item => {
+                const matchSearch = item.ket.toLowerCase().includes(searchKasVal) || item.kat.toLowerCase().includes(searchKasVal);
+                const matchTipe = filterKasTipe === 'all' || item.tipe === filterKasTipe;
+                return matchSearch && matchTipe;
+            });
+
+            filteredKas.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+            let kasHtml = '';
+            filteredKas.forEach(item => {
+                kasHtml += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
+                        <td class="p-3 text-gray-600 text-xs">${item.tanggal}</td>
+                        <td class="p-3 font-medium text-gray-800">${item.ket}</td>
+                        <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">${item.kat}</span></td>
+                        <td class="p-3 text-right font-medium text-emerald-700">${item.tipe === 'in' ? formatRupiah(item.nominal) : '-'}</td>
+                        <td class="p-3 text-right font-medium text-red-600">${item.tipe === 'out' ? formatRupiah(item.nominal) : '-'}</td>
+                        ${isPengurus ? `<td class="p-3 text-center"><button onclick="deleteKas(${item.id})" class="text-red-500 hover:text-red-700 text-xs px-2 py-1 bg-red-50 rounded">Hapus</button></td>` : ''}
+                    </tr>
+                `;
+            });
+            if (filteredKas.length === 0) {
+                kasHtml = `<tr><td colspan="${isPengurus ? 6 : 5}" class="p-6 text-center text-gray-400 text-sm">Tidak ada transaksi kas yang sesuai pencarian.</td></tr>`;
+            }
+            document.getElementById('table-kas-body').innerHTML = kasHtml;
+
+            // 3. NOTULEN SEARCH & RENDER
+            const searchNotulenVal = document.getElementById('search-notulen').value.toLowerCase();
+            let filteredNotulen = notulenData.filter(item => {
+                return item.judul.toLowerCase().includes(searchNotulenVal) || item.pimpinan.toLowerCase().includes(searchNotulenVal) || item.isi.toLowerCase().includes(searchNotulenVal);
+            });
+            filteredNotulen.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            let notulenHtml = '';
+            filteredNotulen.forEach(item => {
+                notulenHtml += `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-full">📅 ${item.tanggal}</span>
+                                <h3 class="font-bold text-gray-800 text-base mt-2">${item.judul}</h3>
+                                <p class="text-xs text-gray-500">Pimpinan: <span class="font-medium text-gray-700">${item.pimpinan}</span></p>
+                            </div>
+                            ${isPengurus ? `<button onclick="deleteNotulen(${item.id})" class="text-red-400 hover:text-red-600 text-xs">Hapus</button>` : ''}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg text-xs text-gray-700 whitespace-pre-line">${item.isi}</div>
+                    </div>
+                `;
+            });
+            if (filteredNotulen.length === 0) {
+                notulenHtml = `<div class="col-span-full p-6 text-center text-gray-400 bg-white rounded-xl border">Tidak ada notulen yang sesuai pencarian.</div>`;
+            }
+            document.getElementById('list-notulen').innerHTML = notulenHtml;
+
+            // 4. AGENDA SEARCH & RENDER + REMINDERS
+            const searchAgendaVal = document.getElementById('search-agenda').value.toLowerCase();
+            let filteredAgenda = agendaData.filter(item => {
+                return item.nama.toLowerCase().includes(searchAgendaVal) || item.lokasi.toLowerCase().includes(searchAgendaVal);
+            });
+            filteredAgenda.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let agendaHtml = '';
+            filteredAgenda.forEach(item => {
+                let badgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+                let badgeText = `Tanggal: ${item.tanggal}`;
+                
+                if (item.tanggal === todayStr) {
+                    badgeClass = 'bg-red-100 text-red-700 border-red-300 font-bold animate-pulse';
+                    badgeText = '🔥 HARI INI!';
+                }
+
+                agendaHtml += `
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs px-2.5 py-1 rounded-full border ${badgeClass}">${badgeText}</span>
+                                <h3 class="font-bold text-gray-800 text-base mt-2">${item.nama}</h3>
+                                <p class="text-xs text-gray-500">📍 Lokasi: <span class="font-medium text-gray-700">${item.lokasi}</span></p>
+                            </div>
+                            ${isPengurus ? `<button onclick="deleteAgenda(${item.id})" class="text-red-400 hover:text-red-600 text-xs">Hapus</button>` : ''}
+                        </div>
+                        ${item.ket ? `<p class="text-xs text-gray-600 bg-gray-50 p-2.5 rounded-lg">💡 ${item.ket}</p>` : ''}
+                    </div>
+                `;
+            });
+            if (filteredAgenda.length === 0) {
+                agendaHtml = `<div class="col-span-full p-6 text-center text-gray-400 bg-white rounded-xl border">Tidak ada agenda yang sesuai pencarian.</div>`;
+            }
+            document.getElementById('list-agenda').innerHTML = agendaHtml;
+
+            // Update Reminder Box
+            const reminderText = document.getElementById('dash-reminder-text');
+            let globalNearest = agendaData.filter(i => i.tanggal >= todayStr).sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal))[0];
+            if (globalNearest) {
+                reminderText.innerHTML = `Kegiatan <b>${globalNearest.nama}</b> akan dilaksanakan pada tanggal <b>${globalNearest.tanggal}</b> di ${globalNearest.lokasi}.`;
+            } else {
+                reminderText.innerHTML = `Tidak ada agenda terdekat dalam waktu dekat.`;
+            }
+        }
+
+        // Initial Render on Load
+        renderAll();
+    </script>
+</body>
+</html>
