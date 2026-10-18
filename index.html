@@ -23,9 +23,7 @@
                     <i data-lucide="wallet" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
-                        SiKAP
-                    </h1>
+                    <h1 class="text-xl font-bold tracking-tight">SiKAP</h1>
                     <p class="text-xs text-emerald-200">Sistem Kas dan Agenda PAPIKO</p>
                 </div>
             </div>
@@ -41,7 +39,7 @@
     <!-- Main Content Container -->
     <main class="max-w-4xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
 
-        <!-- SECTION 1: Dashboard Ringkasan & WhatsApp Recap -->
+        <!-- SECTION 1: Dashboard Ringkasan Saldo -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
@@ -72,35 +70,21 @@
             </div>
         </section>
 
-        <!-- WhatsApp Recap Generator (Member & Officer friendly) -->
-        <section class="bg-gradient-to-r from-emerald-700 to-teal-800 text-white p-5 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="space-y-1 text-center md:text-left">
-                <h4 class="font-bold text-base flex items-center justify-center md:justify-start gap-2">
-                    <i data-lucide="share-2" class="w-5 h-5 text-amber-300"></i>
-                    Rekap Laporan untuk WhatsApp Group
-                </h4>
-                <p class="text-xs text-emerald-100">Salin ringkasan kas dan notulen terbaru secara instan untuk dibagikan ke warga.</p>
-            </div>
-            <button onclick="generateWhatsAppRecap()" class="bg-amber-400 hover:bg-amber-300 text-emerald-950 px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow transition whitespace-nowrap">
-                <i data-lucide="copy" class="w-4 h-4"></i>
-                Salin Teks Rekap ke WA
-            </button>
-        </section>
-
         <!-- OFFICER CONTROLS (Hidden by default, shown when logged in) -->
         <div id="officerPanel" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-4 shadow-sm">
             <div class="flex justify-between items-center border-b border-amber-200 pb-2">
                 <span class="text-xs font-bold text-amber-900 uppercase tracking-wide flex items-center gap-1.5">
-                    <i data-lucide="shield-check" class="w-4 h-4 text-amber-700"></i> Mode Pengurus Aktif (Kelola Data)
+                    <i data-lucide="shield-check" class="w-4 h-4 text-amber-700"></i> Panel Kontrol Pengurus
                 </span>
-                <span class="text-[11px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">Full Access</span>
+                <span class="text-[11px] bg-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">Akses Penuh</span>
             </div>
             
             <!-- Tabs Navigation for Officer -->
             <div class="flex gap-2 overflow-x-auto pb-1">
-                <button onclick="switchTab('kas')" id="tabBtnKas" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition">Kelola Kas</button>
+                <button onclick="switchTab('kas')" id="tabBtnKas" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition shadow-sm">Kelola Kas</button>
                 <button onclick="switchTab('notulen')" id="tabBtnNotulen" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Notulen</button>
                 <button onclick="switchTab('agenda')" id="tabBtnAgenda" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Agenda</button>
+                <button onclick="switchTab('broadcast')" id="tabBtnBroadcast" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition shadow-sm flex items-center gap-1"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Broadcast WA</button>
             </div>
 
             <!-- Tab Content: Add Kas -->
@@ -128,7 +112,7 @@
                         <input type="date" id="notulenDate" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
                         <input type="text" id="notulenTitle" placeholder="Judul Rapat / Acara" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
                     </div>
-                    <textarea id="notulenContent" placeholder="Isi ringkasan hasil rapat / notulen..." rows="3" required class="w-2/3 p-2 text-xs rounded-xl border border-slate-300 bg-white"></textarea>
+                    <textarea id="notulenContent" placeholder="Isi ringkasan hasil rapat / notulen..." rows="3" required class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-white"></textarea>
                     <div>
                         <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan Notulen</button>
                     </div>
@@ -148,6 +132,42 @@
                         <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan Agenda</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Tab Content: Broadcast WA (Custom Picker) -->
+            <div id="tabContentBroadcast" class="officer-tab-content space-y-3 pt-2 hidden">
+                <div class="bg-white p-4 rounded-xl border border-amber-200 space-y-3">
+                    <h5 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="share-2" class="w-4 h-4 text-amber-600"></i> Buat Pesan Rekap untuk WhatsApp Group
+                    </h5>
+                    <p class="text-[11px] text-slate-500">Pilih bagian kas, agenda, atau notulen tanggal berapa yang ingin kamu sertakan dalam broadcast.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pilih Notulen Rapat:</label>
+                            <select id="selectBroadcastNotulen" class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                                <option value="">-- Jangan Sertakan Notulen --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Pilih Agenda Kegiatan:</label>
+                            <select id="selectBroadcastAgenda" class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                                <option value="">-- Jangan Sertakan Agenda --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-1">
+                        <input type="checkbox" id="includeKasCheckbox" checked class="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500">
+                        <label for="includeKasCheckbox" class="text-xs font-medium text-slate-700">Sertakan Informasi Saldo Kas Saat Ini</label>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="generateCustomWhatsAppRecap()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-sm transition">
+                            <i data-lucide="copy" class="w-4 h-4"></i> Salin Teks Rekap ke WhatsApp
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -217,7 +237,7 @@
         <p>SiKAP - Sistem Kas & Agenda PAPIKO &copy; 2026</p>
     </footer>
 
-    <!-- PIN Login Modal (No hints visible!) -->
+    <!-- PIN Login Modal -->
     <div id="authModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-xl border border-slate-100">
             <div class="flex justify-between items-center">
@@ -228,7 +248,7 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500">Masukkan PIN khusus pengurus untuk mengakses menu kelola data.</p>
+            <p class="text-xs text-slate-500">Masukkan PIN pengurus untuk mengakses panel kelola dan broadcast.</p>
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <input type="password" id="pinInput" placeholder="Masukkan PIN..." required class="w-full p-2.5 text-xs rounded-xl border border-slate-300 bg-slate-50 text-center tracking-widest text-lg font-bold">
                 <div class="flex gap-2 pt-1">
@@ -241,7 +261,6 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // Initial Mock Data or LocalStorage
         let transactions = JSON.parse(localStorage.getItem('sikap_transactions')) || [
             { id: 1, date: '2026-10-01', desc: 'Kas Bulanan Warga RT 01', type: 'masuk', amount: 150000 },
             { id: 2, date: '2026-10-05', desc: 'Konsumsi Rapat Pleno Pemuda', type: 'keluar', amount: 45000 }
@@ -257,11 +276,11 @@
 
         let isOfficer = localStorage.getItem('sikap_is_officer') === 'true';
 
-        // Initialize Lucide Icons
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             updateAuthUI();
             renderAll();
+            populateBroadcastOptions();
         });
 
         function saveData() {
@@ -269,6 +288,7 @@
             localStorage.setItem('sikap_minutes', JSON.stringify(notulens));
             localStorage.setItem('sikap_agendas', JSON.stringify(agendas));
             renderAll();
+            populateBroadcastOptions();
         }
 
         function renderAll() {
@@ -279,7 +299,6 @@
             lucide.createIcons();
         }
 
-        // Summary Calculations
         function renderSummary() {
             let masuk = transactions.filter(t => t.type === 'masuk').reduce((acc, t) => acc + Number(t.amount), 0);
             let keluar = transactions.filter(t => t.type === 'keluar').reduce((acc, t) => acc + Number(t.amount), 0);
@@ -290,7 +309,6 @@
             document.getElementById('totalSaldo').innerText = formatRupiah(saldo);
         }
 
-        // Render Kas
         function renderKas() {
             const search = document.getElementById('searchKas').value.toLowerCase();
             const filterType = document.getElementById('filterKasType').value;
@@ -328,7 +346,6 @@
             });
         }
 
-        // Render Notulen
         function renderNotulen() {
             const search = document.getElementById('searchNotulen').value.toLowerCase();
             const container = document.getElementById('notulenContainer');
@@ -356,7 +373,6 @@
             });
         }
 
-        // Render Agenda
         function renderAgenda() {
             const container = document.getElementById('agendaContainer');
             container.innerHTML = '';
@@ -378,6 +394,28 @@
                     ${isOfficer ? `<button onclick="deleteAgenda(${a.id})" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
                 `;
                 container.appendChild(div);
+            });
+        }
+
+        function populateBroadcastOptions() {
+            let notulenSelect = document.getElementById('selectBroadcastNotulen');
+            let agendaSelect = document.getElementById('selectBroadcastAgenda');
+            if(!notulenSelect || !agendaSelect) return;
+
+            notulenSelect.innerHTML = '<option value="">-- Jangan Sertakan Notulen --</option>';
+            notulens.forEach(n => {
+                let opt = document.createElement('option');
+                opt.value = n.id;
+                opt.text = `[${formatDate(n.date)}] ${n.title}`;
+                notulenSelect.appendChild(opt);
+            });
+
+            agendaSelect.innerHTML = '<option value="">-- Jangan Sertakan Agenda --</option>';
+            agendas.forEach(a => {
+                let opt = document.createElement('option');
+                opt.value = a.id;
+                opt.text = `[${formatDate(a.date)}] ${a.title}`;
+                agendaSelect.appendChild(opt);
             });
         }
 
@@ -465,7 +503,6 @@
         function handleLogin(e) {
             e.preventDefault();
             let pin = document.getElementById('pinInput').value;
-            // Default PIN is 1234
             if(pin === '1234') {
                 isOfficer = true;
                 localStorage.setItem('sikap_is_officer', 'true');
@@ -504,43 +541,60 @@
             document.getElementById('tabBtnKas').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnNotulen').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnAgenda').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
+            document.getElementById('tabBtnBroadcast').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition shadow-sm flex items-center gap-1";
 
             document.getElementById('tabContent' + capitalize(tabName)).classList.remove('hidden');
-            document.getElementById('tabBtn' + capitalize(tabName)).className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition";
+            
+            let activeBtn = document.getElementById('tabBtn' + capitalize(tabName));
+            if(tabName === 'broadcast') {
+                activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-700 text-white transition shadow-sm flex items-center gap-1";
+            } else {
+                activeBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition";
+            }
         }
 
-        // WhatsApp Recap Generator
-        function generateWhatsAppRecap() {
-            let masuk = transactions.filter(t => t.type === 'masuk').reduce((acc, t) => acc + Number(t.amount), 0);
-            let keluar = transactions.filter(t => t.type === 'keluar').reduce((acc, t) => acc + Number(t.amount), 0);
-            let saldo = masuk - keluar;
+        // Custom WhatsApp Broadcast Generator based on selection
+        function generateCustomWhatsAppRecap() {
+            let includeKas = document.getElementById('includeKasCheckbox').checked;
+            let selectedNotulenId = document.getElementById('selectBroadcastNotulen').value;
+            let selectedAgendaId = document.getElementById('selectBroadcastAgenda').value;
 
-            let latestNotulen = notulens.length > 0 ? notulens[notulens.length - 1] : null;
-            let latestAgenda = agendas.length > 0 ? agendas[0] : null;
+            let text = `📢 *INFORMASI PAPIKO* 📢\n\n`;
 
-            let text = `📢 *REKAP PAPIKO* 📢\n\n` +
-                       `💰 *Kondisi Kas Saat Ini:*\n` +
-                       `- Total Saldo: ${formatRupiah(saldo)}\n` +
-                       `- Total Pemasukan: ${formatRupiah(masuk)}\n` +
-                       `- Total Pengeluaran: ${formatRupiah(keluar)}\n\n`;
+            if(includeKas) {
+                let masuk = transactions.filter(t => t.type === 'masuk').reduce((acc, t) => acc + Number(t.amount), 0);
+                let keluar = transactions.filter(t => t.type === 'keluar').reduce((acc, t) => acc + Number(t.amount), 0);
+                let saldo = masuk - keluar;
 
-            if(latestNotulen) {
-                text += `📝 *Notulen Rapat Terbaru (${formatDate(latestNotulen.date)}):*\n` +
-                        `*${latestNotulen.title}*\n` +
-                        `${latestNotulen.content}\n\n`;
+                text += `💰 *Kondisi Kas Saat Ini:*\n` +
+                        `- Total Saldo: ${formatRupiah(saldo)}\n` +
+                        `- Pemasukan: ${formatRupiah(masuk)}\n` +
+                        `- Pengeluaran: ${formatRupiah(keluar)}\n\n`;
             }
 
-            if(latestAgenda) {
-                text += `📅 *Agenda Mendatang:*\n` +
-                        `*${latestAgenda.title}*\n` +
-                        `📍 Lokasi: ${latestAgenda.location}\n` +
-                        `🗓️ Tanggal: ${formatDate(latestAgenda.date)}\n\n`;
+            if(selectedNotulenId) {
+                let notulen = notulens.find(n => n.id == selectedNotulenId);
+                if(notulen) {
+                    text += `📝 *Notulen Rapat (${formatDate(notulen.date)}):*\n` +
+                            `*${notulen.title}*\n` +
+                            `${notulen.content}\n\n`;
+                }
+            }
+
+            if(selectedAgendaId) {
+                let agenda = agendas.find(a => a.id == selectedAgendaId);
+                if(agenda) {
+                    text += `📅 *Agenda Mendatang:*\n` +
+                            `*${agenda.title}*\n` +
+                            `📍 Lokasi: ${agenda.location}\n` +
+                            `🗓️ Tanggal: ${formatDate(agenda.date)}\n\n`;
+                }
             }
 
             text += `#PAPIKO #SistemKasDanAgenda`;
 
             navigator.clipboard.writeText(text).then(() => {
-                alert('Teks rekap berhasil disalin! Silakan tempel (paste) langsung ke WhatsApp Group.');
+                alert('Teks broadcast WhatsApp berhasil disalin! Silakan tempel (paste) ke grup.');
             }).catch(err => {
                 console.error('Gagal menyalin: ', err);
                 prompt('Salin teks rekap di bawah ini:', text);
