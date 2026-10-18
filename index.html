@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div>
-                <button id="authBtn" onclick="toggleAuthModal()" class="bg-emerald-700 hover:bg-emerald-600 text-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-600 shadow-sm">
+                <button id="authBtn" onclick="handleAuthButtonClick()" class="bg-emerald-700 hover:bg-emerald-600 text-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-600 shadow-sm">
                     <i data-lucide="lock" class="w-3.5 h-3.5"></i>
                     <span id="authBtnText">Login Pengurus</span>
                 </button>
@@ -244,7 +244,7 @@
                 <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
                     <i data-lucide="lock" class="w-4 h-4 text-emerald-700"></i> Login Pengurus SiKAP
                 </h3>
-                <button onclick="toggleAuthModal()" class="text-slate-400 hover:text-slate-600">
+                <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -252,7 +252,7 @@
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <input type="password" id="pinInput" placeholder="Masukkan PIN..." required class="w-full p-2.5 text-xs rounded-xl border border-slate-300 bg-slate-50 text-center tracking-widest text-lg font-bold">
                 <div class="flex gap-2 pt-1">
-                    <button type="button" onclick="toggleAuthModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
+                    <button type="button" onclick="closeLoginModal()" class="w-1/2 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
                     <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-bold hover:bg-emerald-700 shadow">Masuk</button>
                 </div>
             </form>
@@ -274,6 +274,7 @@
             { id: 1, date: '2026-10-25', title: 'Kerja Bakti Lingkungan', location: 'Pos Ronda Utama' }
         ];
 
+        // Force clean state if stuck, default to false cleanly
         let isOfficer = localStorage.getItem('sikap_is_officer') === 'true';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -484,29 +485,39 @@
             }
         }
 
-        // Auth Handling
-        function toggleAuthModal() {
-            if(isOfficer) {
-                if(confirm('Keluar dari mode pengurus?')) {
+        // Auth Handling (Clean & Reset stuck states)
+        function handleAuthButtonClick() {
+            if (isOfficer) {
+                if (confirm('Keluar dari mode pengurus?')) {
                     isOfficer = false;
                     localStorage.setItem('sikap_is_officer', 'false');
                     updateAuthUI();
                     renderAll();
                 }
             } else {
-                let modal = document.getElementById('authModal');
-                modal.classList.toggle('hidden');
-                document.getElementById('pinInput').value = '';
+                openLoginModal();
             }
+        }
+
+        function openLoginModal() {
+            let modal = document.getElementById('authModal');
+            modal.classList.remove('hidden');
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+
+        function closeLoginModal() {
+            let modal = document.getElementById('authModal');
+            modal.classList.add('hidden');
         }
 
         function handleLogin(e) {
             e.preventDefault();
             let pin = document.getElementById('pinInput').value;
-            if(pin === '1234') {
+            if (pin === '1234') {
                 isOfficer = true;
                 localStorage.setItem('sikap_is_officer', 'true');
-                toggleAuthModal();
+                closeLoginModal();
                 updateAuthUI();
                 renderAll();
                 alert('Berhasil masuk sebagai Pengurus!');
