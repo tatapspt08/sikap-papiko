@@ -107,18 +107,19 @@
 
             <!-- Tab Content: Add Surat (PDF Upload) -->
             <div id="tabContentSurat" class="officer-tab-content space-y-3 pt-2 hidden">
-                <h5 class="text-xs font-bold text-slate-700">Arsip Surat Masuk / Keluar (Upload PDF)</h5>
+                <h5 class="text-xs font-bold text-slate-700">Arsip Surat Pokok, Masuk & Keluar (Upload PDF)</h5>
                 <form id="formSurat" onsubmit="addSurat(event)" class="space-y-2">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <input type="date" id="suratDate" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
-                        <input type="text" id="suratNomor" placeholder="Nomor Surat (cth: 001/PAPIKO/X/2026)" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                        <input type="text" id="suratNomor" placeholder="Nomor Surat / Dokumen" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
                         <select id="suratJenis" class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                            <option value="pokok">Surat Pokok Organisasi (AD/ART/SK)</option>
                             <option value="masuk">Surat Masuk</option>
                             <option value="keluar">Surat Keluar</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input type="text" id="suratPerihal" placeholder="Perihal / Judul Surat" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                        <input type="text" id="suratPerihal" placeholder="Perihal / Judul Dokumen" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
                         <input type="file" id="suratFile" accept=".pdf" required class="p-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
                     </div>
                     <div>
@@ -226,19 +227,20 @@
             </div>
         </section>
 
-        <!-- SECTION 3: Arsip Surat (PDF Archive) -->
+        <!-- SECTION 3: Arsip Surat & Dokumen Organisasi (PDF Archive) -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
                     <i data-lucide="folder-archive" class="w-4 h-4 text-emerald-700"></i>
-                    Arsip Surat (Masuk & Keluar)
+                    Arsip Surat & Dokumen Organisasi (AD/ART, dll)
                 </h4>
                 <div class="flex gap-2 w-full sm:w-auto">
                     <input type="text" id="searchSurat" oninput="renderSurat()" placeholder="Cari nomor/perihal..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 w-full sm:w-48">
                     <select id="filterSuratJenis" onchange="renderSurat()" class="px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50">
-                        <option value="all">Semua</option>
-                        <option value="masuk">Masuk</option>
-                        <option value="keluar">Keluar</option>
+                        <option value="all">Semua Kategori</option>
+                        <option value="pokok">Surat Pokok</option>
+                        <option value="masuk">Surat Masuk</option>
+                        <option value="keluar">Surat Keluar</option>
                     </select>
                 </div>
             </div>
@@ -247,9 +249,9 @@
                     <thead>
                         <tr class="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase">
                             <th class="py-2.5 px-3">Tanggal</th>
-                            <th class="py-2.5 px-3">Nomor Surat</th>
+                            <th class="py-2.5 px-3">Nomor / Dokumen</th>
                             <th class="py-2.5 px-3">Perihal</th>
-                            <th class="py-2.5 px-3">Jenis</th>
+                            <th class="py-2.5 px-3">Kategori</th>
                             <th class="py-2.5 px-3 text-center">File PDF</th>
                             <th id="thAksiSurat" class="py-2.5 px-3 text-center hidden">Aksi</th>
                         </tr>
@@ -317,7 +319,8 @@
         ];
 
         let suratList = JSON.parse(localStorage.getItem('sikap_surat')) || [
-            { id: 1, date: '2026-10-02', nomor: '001/PAPIKO/X/2026', perihal: 'Permohonan Izin Kegiatan', jenis: 'keluar', fileData: '#' }
+            { id: 1, date: '2026-01-01', nomor: '001/AD-ART/PAPIKO/2026', perihal: 'Anggaran Dasar & Rumah Tangga PAPIKO', jenis: 'pokok', fileData: '#' },
+            { id: 2, date: '2026-10-02', nomor: '001/PAPIKO/X/2026', perihal: 'Permohonan Izin Kegiatan', jenis: 'keluar', fileData: '#' }
         ];
 
         let notulens = JSON.parse(localStorage.getItem('sikap_minutes')) || [
@@ -420,6 +423,12 @@
             }
 
             filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(s => {
+                let badgeClass = 'bg-slate-100 text-slate-700';
+                let badgeText = 'Dokumen';
+                if(s.jenis === 'pokok') { badgeClass = 'bg-emerald-50 text-emerald-700'; badgeText = 'Surat Pokok'; }
+                else if(s.jenis === 'masuk') { badgeClass = 'bg-indigo-50 text-indigo-600'; badgeText = 'Masuk'; }
+                else if(s.jenis === 'keluar') { badgeClass = 'bg-amber-50 text-amber-700'; badgeText = 'Keluar'; }
+
                 let row = document.createElement('tr');
                 row.className = "hover:bg-slate-50/80 transition";
                 row.innerHTML = `
@@ -427,19 +436,43 @@
                     <td class="py-2.5 px-3 font-semibold text-slate-700">${s.nomor}</td>
                     <td class="py-2.5 px-3 text-slate-600">${s.perihal}</td>
                     <td class="py-2.5 px-3">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.jenis === 'masuk' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-700'}">
-                            ${s.jenis === 'masuk' ? 'Masuk' : 'Keluar'}
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+                            ${badgeText}
                         </span>
                     </td>
                     <td class="py-2.5 px-3 text-center">
-                        <a href="${s.fileData}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
-                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i> Buka PDF
-                        </a>
+                        <button onclick="openPdfViewer('${s.fileData}')" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Buka PDF
+                        </button>
                     </td>
                     ${isOfficer ? `<td class="py-2.5 px-3 text-center"><button onclick="deleteSurat(${s.id})" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>` : ''}
                 `;
                 tbody.appendChild(row);
             });
+        }
+
+        // Fix mobile blank screen by converting Base64 to Blob URL
+        function openPdfViewer(base64Data) {
+            if(!base64Data || base64Data === '#') {
+                alert('File PDF belum tersedia untuk dokumen ini.');
+                return;
+            }
+            try {
+                const arr = base64Data.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                let u8arr = new Uint8Array(n);
+                while(n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                const blob = new Blob([u8arr], {type: mime});
+                const blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, '_blank');
+            } catch (err) {
+                // Fallback direct open
+                window.open(base64Data, '_blank');
+            }
         }
 
         function renderNotulen() {
@@ -554,7 +587,7 @@
                 suratList.push(newS);
                 saveData();
                 document.getElementById('formSurat').reset();
-                alert('Arsip surat PDF berhasil di-upload dan disimpan!');
+                alert('Arsip surat / dokumen berhasil di-upload dan disimpan!');
             };
             reader.readAsDataURL(file);
         }
