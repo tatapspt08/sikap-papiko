@@ -82,6 +82,7 @@
             <!-- Tabs Navigation for Officer -->
             <div class="flex gap-2 overflow-x-auto pb-1">
                 <button onclick="switchTab('kas')" id="tabBtnKas" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition shadow-sm">Kelola Kas</button>
+                <button onclick="switchTab('surat')" id="tabBtnSurat" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Surat</button>
                 <button onclick="switchTab('notulen')" id="tabBtnNotulen" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Notulen</button>
                 <button onclick="switchTab('agenda')" id="tabBtnAgenda" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Agenda</button>
                 <button onclick="switchTab('broadcast')" id="tabBtnBroadcast" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition shadow-sm flex items-center gap-1"><i data-lucide="share-2" class="w-3.5 h-3.5"></i> Broadcast WA</button>
@@ -100,6 +101,28 @@
                     <div class="flex gap-2">
                         <input type="number" id="kasAmount" placeholder="Nominal (Rp)" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white w-full">
                         <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs font-bold">Simpan</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab Content: Add Surat (PDF Upload) -->
+            <div id="tabContentSurat" class="officer-tab-content space-y-3 pt-2 hidden">
+                <h5 class="text-xs font-bold text-slate-700">Arsip Surat Masuk / Keluar (Upload PDF)</h5>
+                <form id="formSurat" onsubmit="addSurat(event)" class="space-y-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="date" id="suratDate" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                        <input type="text" id="suratNomor" placeholder="Nomor Surat (cth: 001/PAPIKO/X/2026)" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                        <select id="suratJenis" class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                            <option value="masuk">Surat Masuk</option>
+                            <option value="keluar">Surat Keluar</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="suratPerihal" placeholder="Perihal / Judul Surat" required class="p-2 text-xs rounded-xl border border-slate-300 bg-white">
+                        <input type="file" id="suratFile" accept=".pdf" required class="p-1.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    </div>
+                    <div>
+                        <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan & Upload Arsip Surat</button>
                     </div>
                 </form>
             </div>
@@ -198,14 +221,45 @@
                             <th id="thAksiKas" class="py-2.5 px-3 text-center hidden">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="kasTableBody" class="text-xs divide-y divide-slate-50">
-                        <!-- Rendered via JS -->
-                    </tbody>
+                    <tbody id="kasTableBody" class="text-xs divide-y divide-slate-50"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- SECTION 3: Notulen Rapat (Searchable) -->
+        <!-- SECTION 3: Arsip Surat (PDF Archive) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                    <i data-lucide="folder-archive" class="w-4 h-4 text-emerald-700"></i>
+                    Arsip Surat (Masuk & Keluar)
+                </h4>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <input type="text" id="searchSurat" oninput="renderSurat()" placeholder="Cari nomor/perihal..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 w-full sm:w-48">
+                    <select id="filterSuratJenis" onchange="renderSurat()" class="px-2 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50">
+                        <option value="all">Semua</option>
+                        <option value="masuk">Masuk</option>
+                        <option value="keluar">Keluar</option>
+                    </select>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase">
+                            <th class="py-2.5 px-3">Tanggal</th>
+                            <th class="py-2.5 px-3">Nomor Surat</th>
+                            <th class="py-2.5 px-3">Perihal</th>
+                            <th class="py-2.5 px-3">Jenis</th>
+                            <th class="py-2.5 px-3 text-center">File PDF</th>
+                            <th id="thAksiSurat" class="py-2.5 px-3 text-center hidden">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suratTableBody" class="text-xs divide-y divide-slate-50"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Notulen Rapat (Searchable) -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
@@ -214,20 +268,16 @@
                 </h4>
                 <input type="text" id="searchNotulen" oninput="renderNotulen()" placeholder="Cari notulen..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 w-full sm:w-48">
             </div>
-            <div id="notulenContainer" class="space-y-3">
-                <!-- Rendered via JS -->
-            </div>
+            <div id="notulenContainer" class="space-y-3"></div>
         </section>
 
-        <!-- SECTION 4: Agenda Kegiatan -->
+        <!-- SECTION 5: Agenda Kegiatan -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
                 <i data-lucide="calendar" class="w-4 h-4 text-emerald-700"></i>
                 Agenda Kegiatan Mendatang
             </h4>
-            <div id="agendaContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <!-- Rendered via JS -->
-            </div>
+            <div id="agendaContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
         </section>
 
     </main>
@@ -248,7 +298,7 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500">Masukkan PIN pengurus untuk mengakses panel kelola dan broadcast.</p>
+            <p class="text-xs text-slate-500">Masukkan PIN pengurus untuk mengakses panel kelola dan arsip.</p>
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <input type="password" id="pinInput" placeholder="Masukkan PIN..." required class="w-full p-2.5 text-xs rounded-xl border border-slate-300 bg-slate-50 text-center tracking-widest text-lg font-bold">
                 <div class="flex gap-2 pt-1">
@@ -266,6 +316,10 @@
             { id: 2, date: '2026-10-05', desc: 'Konsumsi Rapat Pleno Pemuda', type: 'keluar', amount: 45000 }
         ];
 
+        let suratList = JSON.parse(localStorage.getItem('sikap_surat')) || [
+            { id: 1, date: '2026-10-02', nomor: '001/PAPIKO/X/2026', perihal: 'Permohonan Izin Kegiatan', jenis: 'keluar', fileData: '#' }
+        ];
+
         let notulens = JSON.parse(localStorage.getItem('sikap_minutes')) || [
             { id: 1, date: '2026-10-05', title: 'Rapat Persiapan HUT', content: 'Pembentukan panitia inti dan estimasi anggaran kegiatan.' }
         ];
@@ -274,7 +328,6 @@
             { id: 1, date: '2026-10-25', title: 'Kerja Bakti Lingkungan', location: 'Pos Ronda Utama' }
         ];
 
-        // Force clean state if stuck, default to false cleanly
         let isOfficer = localStorage.getItem('sikap_is_officer') === 'true';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -286,6 +339,7 @@
 
         function saveData() {
             localStorage.setItem('sikap_transactions', JSON.stringify(transactions));
+            localStorage.setItem('sikap_surat', JSON.stringify(suratList));
             localStorage.setItem('sikap_minutes', JSON.stringify(notulens));
             localStorage.setItem('sikap_agendas', JSON.stringify(agendas));
             renderAll();
@@ -295,6 +349,7 @@
         function renderAll() {
             renderSummary();
             renderKas();
+            renderSurat();
             renderNotulen();
             renderAgenda();
             lucide.createIcons();
@@ -342,6 +397,46 @@
                         ${t.type === 'masuk' ? '+' : '-'} ${formatRupiah(t.amount)}
                     </td>
                     ${isOfficer ? `<td class="py-2.5 px-3 text-center"><button onclick="deleteKas(${t.id})" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>` : ''}
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderSurat() {
+            const search = document.getElementById('searchSurat').value.toLowerCase();
+            const filterJenis = document.getElementById('filterSuratJenis').value;
+            const tbody = document.getElementById('suratTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = suratList.filter(s => {
+                let matchSearch = s.nomor.toLowerCase().includes(search) || s.perihal.toLowerCase().includes(search);
+                let matchJenis = filterJenis === 'all' || s.jenis === filterJenis;
+                return matchSearch && matchJenis;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${isOfficer ? 6 : 5}" class="py-4 text-center text-slate-400">Belum ada arsip surat.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(s => {
+                let row = document.createElement('tr');
+                row.className = "hover:bg-slate-50/80 transition";
+                row.innerHTML = `
+                    <td class="py-2.5 px-3 text-slate-500 whitespace-nowrap">${formatDate(s.date)}</td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-700">${s.nomor}</td>
+                    <td class="py-2.5 px-3 text-slate-600">${s.perihal}</td>
+                    <td class="py-2.5 px-3">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.jenis === 'masuk' ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-700'}">
+                            ${s.jenis === 'masuk' ? 'Masuk' : 'Keluar'}
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                        <a href="${s.fileData}" target="_blank" class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5"></i> Buka PDF
+                        </a>
+                    </td>
+                    ${isOfficer ? `<td class="py-2.5 px-3 text-center"><button onclick="deleteSurat(${s.id})" class="text-rose-500 hover:text-rose-700 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>` : ''}
                 `;
                 tbody.appendChild(row);
             });
@@ -436,6 +531,34 @@
             alert('Transaksi berhasil ditambahkan!');
         }
 
+        function addSurat(e) {
+            e.preventDefault();
+            let fileInput = document.getElementById('suratFile');
+            let file = fileInput.files[0];
+
+            if (!file) {
+                alert('Pilih file PDF terlebih dahulu!');
+                return;
+            }
+
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                let newS = {
+                    id: Date.now(),
+                    date: document.getElementById('suratDate').value,
+                    nomor: document.getElementById('suratNomor').value,
+                    perihal: document.getElementById('suratPerihal').value,
+                    jenis: document.getElementById('suratJenis').value,
+                    fileData: event.target.result // Base64 PDF data
+                };
+                suratList.push(newS);
+                saveData();
+                document.getElementById('formSurat').reset();
+                alert('Arsip surat PDF berhasil di-upload dan disimpan!');
+            };
+            reader.readAsDataURL(file);
+        }
+
         function addNotulen(e) {
             e.preventDefault();
             let newN = {
@@ -471,6 +594,13 @@
             }
         }
 
+        function deleteSurat(id) {
+            if(confirm('Hapus arsip surat ini?')) {
+                suratList = suratList.filter(s => s.id !== id);
+                saveData();
+            }
+        }
+
         function deleteNotulen(id) {
             if(confirm('Hapus notulen ini?')) {
                 notulens = notulens.filter(n => n.id !== id);
@@ -485,7 +615,7 @@
             }
         }
 
-        // Auth Handling (Clean & Reset stuck states)
+        // Auth Handling
         function handleAuthButtonClick() {
             if (isOfficer) {
                 if (confirm('Keluar dari mode pengurus?')) {
@@ -532,17 +662,20 @@
             let btnText = document.getElementById('authBtnText');
             let officerPanel = document.getElementById('officerPanel');
             let thAksiKas = document.getElementById('thAksiKas');
+            let thAksiSurat = document.getElementById('thAksiSurat');
 
             if(isOfficer) {
                 btn.className = "bg-amber-400 hover:bg-amber-300 text-emerald-950 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow";
                 btnText.innerText = "Keluar Pengurus";
                 officerPanel.classList.remove('hidden');
                 if(thAksiKas) thAksiKas.classList.remove('hidden');
+                if(thAksiSurat) thAksiSurat.classList.remove('hidden');
             } else {
                 btn.className = "bg-emerald-700 hover:bg-emerald-600 text-emerald-100 px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-emerald-600 shadow-sm";
                 btnText.innerText = "Login Pengurus";
                 officerPanel.classList.add('hidden');
                 if(thAksiKas) thAksiKas.classList.add('hidden');
+                if(thAksiSurat) thAksiSurat.classList.add('hidden');
             }
         }
 
@@ -550,6 +683,7 @@
         function switchTab(tabName) {
             document.querySelectorAll('.officer-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tabBtnKas').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
+            document.getElementById('tabBtnSurat').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnNotulen').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnAgenda').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnBroadcast').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition shadow-sm flex items-center gap-1";
@@ -564,7 +698,7 @@
             }
         }
 
-        // Custom WhatsApp Broadcast Generator based on selection
+        // Custom WhatsApp Broadcast Generator
         function generateCustomWhatsAppRecap() {
             let includeKas = document.getElementById('includeKasCheckbox').checked;
             let selectedNotulenId = document.getElementById('selectBroadcastNotulen').value;
@@ -605,7 +739,7 @@
             text += `#PAPIKO #SistemKasDanAgenda`;
 
             navigator.clipboard.writeText(text).then(() => {
-                alert('Teks broadcast WhatsApp berhasil disalin! Silakan tempel (paste) ke grup.');
+                alert('Teks broadcast WhatsApp berhasil disalin!');
             }).catch(err => {
                 console.error('Gagal menyalin: ', err);
                 prompt('Salin teks rekap di bawah ini:', text);
