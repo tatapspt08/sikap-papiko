@@ -82,6 +82,7 @@
             <!-- Tabs Navigation for Officer -->
             <div class="flex gap-2 overflow-x-auto pb-1">
                 <button onclick="switchTab('kas')" id="tabBtnKas" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 text-white transition shadow-sm">Kelola Kas</button>
+                <button onclick="switchTab('seragam')" id="tabBtnSeragam" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Seragam</button>
                 <button onclick="switchTab('surat')" id="tabBtnSurat" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Surat</button>
                 <button onclick="switchTab('notulen')" id="tabBtnNotulen" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Notulen</button>
                 <button onclick="switchTab('agenda')" id="tabBtnAgenda" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition">Kelola Agenda</button>
@@ -103,6 +104,29 @@
                         <button type="submit" class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-2 rounded-xl text-xs font-bold">Simpan</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Tab Content: Kelola Seragam -->
+            <div id="tabContentSeragam" class="officer-tab-content space-y-3 pt-2 hidden">
+                <div class="bg-white p-4 rounded-xl border border-amber-200 space-y-3">
+                    <h5 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="shirt" class="w-4 h-4 text-amber-700"></i> Pengaturan Informasi Seragam Organisasi
+                    </h5>
+                    <form onsubmit="updateSeragamInfo(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tanggal Terakhir Digunakan:</label>
+                            <input type="date" id="infoLastUsed" required class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Lokasi Penyimpanan:</label>
+                            <input type="text" id="infoLocation" value="Rumah Ketua (Aziz Wardoyo)" required class="w-full p-2 text-xs rounded-xl border border-slate-300 bg-slate-50">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white p-2 rounded-xl text-xs font-bold">Perbarui Info</button>
+                        </div>
+                    </form>
+                    <p class="text-[11px] text-slate-500 italic">*Status centang pengumpulan anggota dapat langsung diubah pada tabel di bawah bagian Pelacakan Seragam.</p>
+                </div>
             </div>
 
             <!-- Tab Content: Add Surat (PDF Upload) -->
@@ -227,7 +251,40 @@
             </div>
         </section>
 
-        <!-- SECTION 3: Arsip Surat & Dokumen Organisasi (PDF Archive) -->
+        <!-- SECTION 3: Pelacakan Pengumpulan Seragam -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                        <i data-lucide="shirt" class="w-4 h-4 text-emerald-700"></i>
+                        Pelacakan Pengumpulan Seragam PAPIKO
+                    </h4>
+                    <p class="text-[11px] text-slate-500 mt-0.5">
+                        📍 Lokasi Penyimpanan: <span id="displayLocation" class="font-semibold text-slate-700">Rumah Ketua (Aziz Wardoyo)</span> | 
+                        🗓️ Terakhir Digunakan: <span id="displayLastUsed" class="font-semibold text-slate-700">-</span>
+                    </p>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto items-center">
+                    <span id="seragamCounter" class="text-xs font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-xl border border-emerald-200">0/0 Terkumpul</span>
+                    <input type="text" id="searchSeragam" oninput="renderSeragam()" placeholder="Cari nama anggota..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 w-full sm:w-48">
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-96 overflow-y-auto border border-slate-100 rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-slate-50 z-10">
+                        <tr class="border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase">
+                            <th class="py-2.5 px-3">No</th>
+                            <th class="py-2.5 px-3">Nama Anggota</th>
+                            <th class="py-2.5 px-3">Jabatan / Divisi</th>
+                            <th class="py-2.5 px-3 text-center">Status Pengumpulan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="seragamTableBody" class="text-xs divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Arsip Surat & Dokumen Organisasi (PDF Archive) -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
@@ -261,7 +318,7 @@
             </div>
         </section>
 
-        <!-- SECTION 4: Notulen Rapat (Searchable) -->
+        <!-- SECTION 5: Notulen Rapat (Searchable) -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
@@ -273,7 +330,7 @@
             <div id="notulenContainer" class="space-y-3"></div>
         </section>
 
-        <!-- SECTION 5: Agenda Kegiatan -->
+        <!-- SECTION 6: Agenda Kegiatan -->
         <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-4">
             <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
                 <i data-lucide="calendar" class="w-4 h-4 text-emerald-700"></i>
@@ -318,6 +375,47 @@
             { id: 2, date: '2026-10-05', desc: 'Konsumsi Rapat Pleno Pemuda', type: 'keluar', amount: 45000 }
         ];
 
+        // Default Full Member Structure based on image provided
+        const defaultSeragamList = [
+            { id: 1, name: 'Aziz Wardoyo', role: 'Ketua (Pengurus Harian)', collected: false },
+            { id: 2, name: 'Intan Puspita Sari', role: 'Wakil Ketua (Pengurus Harian)', collected: false },
+            { id: 3, name: 'Putri Nur Baity', role: 'Sekretaris I (Pengurus Harian)', collected: false },
+            { id: 4, name: 'Naeva', role: 'Sekretaris II (Pengurus Harian)', collected: false },
+            { id: 5, name: 'Salvia Nur Rafiani', role: 'Bendahara I (Pengurus Harian)', collected: false },
+            { id: 6, name: 'Raffa', role: 'Bendahara II (Pengurus Harian)', collected: false },
+            { id: 7, name: 'Yudha', role: 'Seksi Humas', collected: false },
+            { id: 8, name: 'Rafi', role: 'Seksi Humas', collected: false },
+            { id: 9, name: 'Wawan', role: 'Seksi Humas', collected: false },
+            { id: 10, name: 'Yoga', role: 'Seksi Humas', collected: false },
+            { id: 11, name: 'Deni', role: 'Seksi Sinoman', collected: false },
+            { id: 12, name: 'Viko', role: 'Seksi Sinoman', collected: false },
+            { id: 13, name: 'Riva', role: 'Seksi Sinoman', collected: false },
+            { id: 14, name: 'Ismi', role: 'Seksi Sinoman', collected: false },
+            { id: 15, name: 'Diva', role: 'Seksi PDD', collected: false },
+            { id: 16, name: 'Vina', role: 'Seksi PDD', collected: false },
+            { id: 17, name: 'Atta', role: 'Seksi PDD', collected: false },
+            { id: 18, name: 'Tirsa', role: 'Seksi PDD', collected: false },
+            { id: 19, name: 'Bernik', role: 'Seksi PDD', collected: false },
+            { id: 20, name: 'Rizky', role: 'Seksi Perlengkapan', collected: false },
+            { id: 21, name: 'Slamet', role: 'Seksi Perlengkapan', collected: false },
+            { id: 22, name: 'Joko', role: 'Seksi Perlengkapan', collected: false },
+            { id: 23, name: 'Reza', role: 'Seksi Perlengkapan', collected: false },
+            { id: 24, name: 'Ghalib', role: 'Seksi Keolahragaan', collected: false },
+            { id: 25, name: 'Elsa', role: 'Seksi Keolahragaan', collected: false },
+            { id: 26, name: 'Laila', role: 'Seksi Keolahragaan', collected: false },
+            { id: 27, name: 'Noel', role: 'Seksi Keolahragaan', collected: false },
+            { id: 28, name: 'Peter', role: 'Seksi Keolahragaan', collected: false },
+            { id: 29, name: 'Rian', role: 'Seksi Lingkungan Hidup', collected: false },
+            { id: 30, name: 'David', role: 'Seksi Lingkungan Hidup', collected: false },
+            { id: 31, name: 'Zaim', role: 'Seksi Lingkungan Hidup', collected: false }
+        ];
+
+        let seragamList = JSON.parse(localStorage.getItem('sikap_seragam')) || defaultSeragamList;
+        let seragamInfo = JSON.parse(localStorage.getItem('sikap_seragam_info')) || {
+            location: 'Rumah Ketua (Aziz Wardoyo)',
+            lastUsed: '2026-08-17'
+        };
+
         let suratList = JSON.parse(localStorage.getItem('sikap_surat')) || [
             { id: 1, date: '2026-01-01', nomor: '001/AD-ART/PAPIKO/2026', perihal: 'Anggaran Dasar & Rumah Tangga PAPIKO', jenis: 'pokok', fileData: '#' },
             { id: 2, date: '2026-10-02', nomor: '001/PAPIKO/X/2026', perihal: 'Permohonan Izin Kegiatan', jenis: 'keluar', fileData: '#' }
@@ -342,6 +440,8 @@
 
         function saveData() {
             localStorage.setItem('sikap_transactions', JSON.stringify(transactions));
+            localStorage.setItem('sikap_seragam', JSON.stringify(seragamList));
+            localStorage.setItem('sikap_seragam_info', JSON.stringify(seragamInfo));
             localStorage.setItem('sikap_surat', JSON.stringify(suratList));
             localStorage.setItem('sikap_minutes', JSON.stringify(notulens));
             localStorage.setItem('sikap_agendas', JSON.stringify(agendas));
@@ -352,6 +452,7 @@
         function renderAll() {
             renderSummary();
             renderKas();
+            renderSeragam();
             renderSurat();
             renderNotulen();
             renderAgenda();
@@ -405,6 +506,61 @@
             });
         }
 
+        function renderSeragam() {
+            const search = document.getElementById('searchSeragam').value.toLowerCase();
+            const tbody = document.getElementById('seragamTableBody');
+            tbody.innerHTML = '';
+
+            // Update Header Info
+            document.getElementById('displayLocation').innerText = seragamInfo.location;
+            document.getElementById('displayLastUsed').innerText = formatDate(seragamInfo.lastUsed);
+            
+            let totalCollected = seragamList.filter(s => s.collected).length;
+            document.getElementById('seragamCounter').innerText = `${totalCollected}/${seragamList.length} Terkumpul`;
+
+            let filtered = seragamList.filter(s => s.name.toLowerCase().includes(search) || s.role.toLowerCase().includes(search));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Anggota tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((s, index) => {
+                let row = document.createElement('tr');
+                row.className = "hover:bg-slate-50/80 transition";
+                row.innerHTML = `
+                    <td class="py-2.5 px-3 text-slate-500 whitespace-nowrap">${index + 1}</td>
+                    <td class="py-2.5 px-3 font-semibold text-slate-800">${s.name}</td>
+                    <td class="py-2.5 px-3 text-slate-600">${s.role}</td>
+                    <td class="py-2.5 px-3 text-center">
+                        <label class="inline-flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" ${s.collected ? 'checked' : ''} ${!isOfficer ? 'disabled' : ''} onclick="toggleSeragam(${s.id})" class="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500 w-4 h-4">
+                            <span class="text-[11px] font-bold ${s.collected ? 'text-emerald-700' : 'text-slate-400'}">
+                                ${s.collected ? 'Sudah Kumpul' : 'Belum'}
+                            </span>
+                        </label>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function toggleSeragam(id) {
+            let item = seragamList.find(s => s.id === id);
+            if(item) {
+                item.collected = !item.collected;
+                saveData();
+            }
+        }
+
+        function updateSeragamInfo(e) {
+            e.preventDefault();
+            seragamInfo.lastUsed = document.getElementById('infoLastUsed').value;
+            seragamInfo.location = document.getElementById('infoLocation').value;
+            saveData();
+            alert('Informasi seragam berhasil diperbarui!');
+        }
+
         function renderSurat() {
             const search = document.getElementById('searchSurat').value.toLowerCase();
             const filterJenis = document.getElementById('filterSuratJenis').value;
@@ -451,7 +607,6 @@
             });
         }
 
-        // Fix mobile blank screen by converting Base64 to Blob URL
         function openPdfViewer(base64Data) {
             if(!base64Data || base64Data === '#') {
                 alert('File PDF belum tersedia untuk dokumen ini.');
@@ -470,7 +625,6 @@
                 const blobUrl = URL.createObjectURL(blob);
                 window.open(blobUrl, '_blank');
             } catch (err) {
-                // Fallback direct open
                 window.open(base64Data, '_blank');
             }
         }
@@ -582,7 +736,7 @@
                     nomor: document.getElementById('suratNomor').value,
                     perihal: document.getElementById('suratPerihal').value,
                     jenis: document.getElementById('suratJenis').value,
-                    fileData: event.target.result // Base64 PDF data
+                    fileData: event.target.result
                 };
                 suratList.push(newS);
                 saveData();
@@ -716,6 +870,7 @@
         function switchTab(tabName) {
             document.querySelectorAll('.officer-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tabBtnKas').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
+            document.getElementById('tabBtnSeragam').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnSurat').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnNotulen').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
             document.getElementById('tabBtnAgenda').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 border border-amber-300 hover:bg-amber-100 transition";
@@ -785,7 +940,7 @@
         }
 
         function formatDate(dateString) {
-            if (!dateString) return '';
+            if (!dateString) return '-';
             let options = { day: 'numeric', month: 'short', year: 'numeric' };
             return new Date(dateString).toLocaleDateString('id-ID', options);
         }
